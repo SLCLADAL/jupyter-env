@@ -1,2 +1,2 @@
 nbgitpuller
-jupyter-shiny-proxy
+jupyter-server-proxy
