@@ -3,11 +3,11 @@ set -e
 
 echo "=== Downloading udpipe language models ==="
 
-mkdir -p /srv/udpipe-models
+mkdir -p ${HOME}/udpipe-models
 
 Rscript -e "
 library(udpipe)
-model_dir <- '/srv/udpipe-models'
+model_dir <- paste0(Sys.getenv('HOME'), '/udpipe-models')
 models <- c(
   'arabic-padt',
   'chinese-gsd', 'chinese-gsdsimp',
