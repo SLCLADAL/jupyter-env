@@ -5,7 +5,7 @@ echo "=== Downloading udpipe language models ==="
 
 mkdir -p ${HOME}/udpipe-models
 
-Rscript --vanilla << 'EOF'
+cat > /tmp/download_models.R << 'EOF'
 library(udpipe)
 model_dir <- file.path(Sys.getenv("HOME"), "udpipe-models")
 models <- c(
@@ -36,5 +36,7 @@ for (lang in models) {
 }
 cat("Done. Models:", length(list.files(model_dir, pattern = "\\.udpipe$")), "\n")
 EOF
+
+Rscript --vanilla /tmp/download_models.R
 
 echo "=== udpipe model download complete ==="
