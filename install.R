@@ -97,4 +97,5 @@ install.packages("wrassp")
 install.packages("writexl")
 install.packages('xlsx')
 install.packages('zoo')
-
+install.packages('shiny')
+install.packages('DT')
