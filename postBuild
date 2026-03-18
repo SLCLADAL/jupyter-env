@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+echo "=== Downloading udpipe language models ==="
+Rscript -e "
+  source('https://raw.githubusercontent.com/SLCLADAL/tools/main/udptagger/download_udpipe_models.R')
+"
+echo "=== udpipe model download complete ==="
