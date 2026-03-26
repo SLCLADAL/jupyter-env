@@ -1,2 +1,3 @@
 nbgitpuller
 ipywidgets>=8.0
+jupyter-server-proxy
