@@ -1,0 +1,2 @@
+nbgitpuller
+ipywidgets>=8.0
