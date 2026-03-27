@@ -1,46 +1,71 @@
 # install.R for SLCLADAL/jupyter-env
-# Last updated: 2025 — rebuilt for the 8 LADAL notebook tools.
-# Pushing this file triggers a fresh Binder image build.
+# Updated 2025-03-27
 
-# ── Core data wrangling ───────────────────────────────────────────────
-install.packages("dplyr")
-install.packages("tidyr")
-install.packages("tibble")
-install.packages("readr")
-install.packages("stringr")
-install.packages("stringi")
-install.packages("magrittr")
-install.packages("here")
+options(warn = 2)
 
-# ── File I/O ──────────────────────────────────────────────────────────
-install.packages("readxl")
-install.packages("writexl")
-install.packages("zip")
+install_pkg <- function(pkg) {
+  message("Installing: ", pkg)
+  install.packages(pkg, repos = "https://cloud.r-project.org",
+                   dependencies = TRUE, quiet = FALSE)
+  if (!requireNamespace(pkg, quietly = TRUE))
+    stop("Failed to install: ", pkg)
+  message("OK: ", pkg)
+}
 
-# ── Visualisation ─────────────────────────────────────────────────────
-install.packages("ggplot2")
-install.packages("ggraph")
-install.packages("RColorBrewer")
-install.packages("scales")
-install.packages("viridis")
+pkgs <- c(
+  "dplyr", "tidyr", "tibble", "readr",
+  "stringr", "stringi", "magrittr", "here",
+  "readxl", "writexl", "zip",
+  "ggplot2", "ggraph", "RColorBrewer", "scales", "viridis",
+  "quanteda", "quanteda.textstats", "quanteda.textplots",
+  "tidytext", "tokenizers", "SnowballC",
+  "udpipe",
+  "syuzhet",
+  "topicmodels",
+  "igraph", "tidygraph"
+)
 
-# ── Corpus and text analysis ──────────────────────────────────────────
-install.packages("quanteda")
-install.packages("quanteda.textstats")
-install.packages("quanteda.textplots")
-install.packages("tidytext")
-install.packages("tokenizers")
-install.packages("SnowballC")
+for (pkg in pkgs) install_pkg(pkg)
 
-# ── Part-of-speech tagging ────────────────────────────────────────────
-install.packages("udpipe")
+# ── Pre-download UDPipe language models ──────────────────────────────
+# Done here (not in postBuild) so the correct R library path is active.
+message("\nPre-downloading UDPipe language models...")
 
-# ── Sentiment analysis ────────────────────────────────────────────────
-install.packages("syuzhet")
+model_dir <- file.path(Sys.getenv("HOME", "/home/jovyan"), "udpipe-models")
+dir.create(model_dir, showWarnings = FALSE, recursive = TRUE)
 
-# ── Topic modelling ───────────────────────────────────────────────────
-install.packages("topicmodels")
+models <- c(
+  "english-ewt",
+  "english-gum",
+  "german-gsd",
+  "french-gsd",
+  "spanish-ancora",
+  "italian-isdt",
+  "dutch-alpino",
+  "portuguese-bosque",
+  "russian-gsd",
+  "chinese-gsd",
+  "arabic-padt",
+  "japanese-gsd"
+)
 
-# ── Network analysis ──────────────────────────────────────────────────
-install.packages("igraph")
-install.packages("tidygraph")
+for (lang in models) {
+  message("Downloading: ", lang)
+  tryCatch({
+    dl <- udpipe::udpipe_download_model(language = lang,
+                                        model_dir = model_dir)
+    if (isTRUE(dl$download_failed)) {
+      message("WARNING: download failed for ", lang, " — skipping")
+    } else {
+      message("OK: ", lang)
+    }
+  }, error = function(e) {
+    message("WARNING: error downloading ", lang, ": ", conditionMessage(e))
+  })
+}
+
+downloaded <- list.files(model_dir, pattern = "\\.udpipe$")
+message("Models pre-installed (", length(downloaded), "):")
+for (f in downloaded) message("  ", f)
+
+message("\nAll done.")
