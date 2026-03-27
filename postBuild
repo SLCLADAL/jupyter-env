@@ -1,0 +1,54 @@
+#!/bin/bash
+# postBuild for SLCLADAL/jupyter-env
+# Runs once during Docker image build (after install.R).
+# Downloads UDPipe language models so POS tagging works instantly.
+
+set -e  # stop on any error
+
+MODEL_DIR="${HOME}/udpipe-models"
+mkdir -p "${MODEL_DIR}"
+
+echo "Downloading UDPipe language models to ${MODEL_DIR}..."
+
+Rscript - << 'REOF'
+library(udpipe)
+
+model_dir <- file.path(Sys.getenv("HOME"), "udpipe-models")
+
+# Languages to pre-download — covers the most common use cases.
+# Add or remove entries to suit your users.
+models <- c(
+  "english-ewt",        # English (recommended)
+  "english-gum",        # English (alternative)
+  "german-gsd",         # German
+  "french-gsd",         # French
+  "spanish-ancora",     # Spanish
+  "italian-isdt",       # Italian
+  "dutch-alpino",       # Dutch
+  "portuguese-bosque",  # Portuguese
+  "russian-gsd",        # Russian
+  "chinese-gsd",        # Chinese
+  "arabic-padt",        # Arabic
+  "japanese-gsd"        # Japanese
+)
+
+for (lang in models) {
+  message("Downloading: ", lang)
+  tryCatch({
+    dl <- udpipe_download_model(language = lang, model_dir = model_dir)
+    if (isTRUE(dl$download_failed)) {
+      warning("Download failed for: ", lang)
+    } else {
+      message("OK: ", lang, " -> ", basename(dl$file_model))
+    }
+  }, error = function(e) {
+    warning("Error downloading ", lang, ": ", conditionMessage(e))
+  })
+}
+
+downloaded <- list.files(model_dir, pattern = "\\.udpipe$")
+message("\nModels available in image (", length(downloaded), "):")
+for (f in downloaded) message("  ", f)
+REOF
+
+echo "postBuild complete."
